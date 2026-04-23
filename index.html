@@ -189,90 +189,55 @@
                 </div>
 
                 <!-- История -->
-          <div
-            class="glass-card rounded-3xl p-6 shadow-sm border border-slate-200"
-          >
+        <div class="glass-card rounded-3xl p-6 shadow-sm border border-slate-200">
             <h3 class="text-lg font-bold text-slate-800">История операций</h3>
-            <div
-              class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6"
-            >
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6" >
               <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                 <!-- Группа кнопок фильтров -->
-                <div
-                  class="flex bg-slate-100 p-1 rounded-xl flex-grow sm:flex-grow-0"
-                >
-                  <button
-                    onclick="changeFilter('all')"
-                    data-filter="all"
-                    class="filter-btn active text-[10px] md:text-xs px-3 py-1.5 rounded-lg font-bold transition-all uppercase"
-                  >
-                    Все
-                  </button>
-                  <button
-                    onclick="changeFilter('day')"
-                    data-filter="day"
-                    class="filter-btn text-[10px] md:text-xs px-3 py-1.5 rounded-lg font-bold text-slate-500 hover:text-slate-800 transition-all uppercase"
-                  >
-                    Сегодня
-                  </button>
-                  <button
-                    onclick="changeFilter('week')"
-                    data-filter="week"
-                    class="filter-btn text-[10px] md:text-xs px-3 py-1.5 rounded-lg font-bold text-slate-500 hover:text-slate-800 transition-all uppercase"
-                  >
-                    7 дней
-                  </button>
+                <div class="flex bg-slate-100 p-1 rounded-xl flex-grow sm:flex-grow-0" >
+                  <button onclick="changeFilter('all')" data-filter="all" class="filter-btn active text-[10px] md:text-xs px-3 py-1.5 rounded-lg font-bold transition-all uppercase" > Все</button>
+                  <button onclick="changeFilter('day')" data-filter="day" class="filter-btn text-[10px] md:text-xs px-3 py-1.5 rounded-lg font-bold text-slate-500 hover:text-slate-800 transition-all uppercase">Сегодня</button>
+                  <button onclick="changeFilter('week')" data-filter="week" class="filter-btn text-[10px] md:text-xs px-3 py-1.5 rounded-lg font-bold text-slate-500 hover:text-slate-800 transition-all uppercase">7 дней</button>
                 </div>
 
                 <!-- Выбор конкретной даты для фильтрации -->
-                <div
-                  class="relative flex items-center bg-slate-100 p-1 rounded-xl group"
-                >
-                  <span
-                    class="pl-2 pr-1 text-[10px] font-bold text-slate-400 uppercase hidden sm:inline"
-                    >Выбор даты:</span
-                  >
-                  <input
-                    type="date"
-                    id="filter-specific-date"
-                    onchange="changeFilter('custom')"
-                    class="bg-white border border-slate-200 text-xs font-bold text-slate-700 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
+                <div class="relative flex items-center bg-slate-100 p-1 rounded-xl group">
+                  <span class="pl-2 pr-1 text-[10px] font-bold text-slate-400 uppercase hidden sm:inline">Выбор даты:</span>
+                  <input type="date" id="filter-specific-date" onchange="changeFilter('custom')" class="bg-white border border-slate-200 text-xs font-bold text-slate-700 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-indigo-500"/>
                 </div>
 
-                <div
-                   class="relative flex items-center p-1 rounded-xl group justify-end"
-                >
-                  <button
-                    onclick="clearHistory()"
-                    class="flex items-center gap-1 text-xs text-rose-500 hover:text-rose-600 transition-colors font-semibold"
-                  >
-                    <i data-lucide="trash-2" class="w-3 h-3"></i> Очистить всё
-                  </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleSort()" class="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-all font-semibold h-8 overflow-hidden group">
+                        <i data-lucide="arrow-up-down" class="w-4 h-4"></i>
+                        <span class="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 transition-all duration-300 text-xs whitespace-nowrap">Сортировка</span>
+                    </button>
+
+                    <button onclick="clearHistory()" class="flex items-center gap-2 text-rose-500 hover:text-rose-600 transition-all font-semibold h-8 overflow-hidden group">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span class="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 transition-all duration-300 text-xs whitespace-nowrap">Очистить всё</span>
+                    </button>
                 </div>
               </div>
             </div>
-
-            <div
-              id="transactions-list"
-              class="space-y-1 overflow-y-auto max-h-[430px] pr-1"
-            >
-              <!-- Список транзакций -->
-            </div>
-          </div>
+                <div
+                  id="transactions-list"
+                  class="space-y-1 overflow-y-auto max-h-[430px] pr-1">
+                  <!-- Список транзакций -->
+                </div>
             </div>
         </div>
+      </div>
     </div>
 
     <script>
         lucide.createIcons();
-
         let currentType = 'income';
         let currentFilter = 'all';
         let transactions = JSON.parse(localStorage.getItem('ff_data')) || [];
         let profile = JSON.parse(localStorage.getItem('ff_profile')) || { name: 'Пользователь', photo: '' };
         let tempPhotoBase64 = ''; // Для временного хранения превью
         let financeChart;
+        let sortOrder = 'desc'; // 'desc' — новые сначала, 'asc' — старые сначала
 
         // Инициализация дат
         const today = new Date().toISOString().split('T')[0];
@@ -338,24 +303,47 @@
         function renderUI() {
             const list = document.getElementById('transactions-list');
             list.innerHTML = '';
-            
+
+            // 1. Сначала фильтруем данные один раз
             const filtered = transactions.filter(t => {
                 if (currentFilter === 'all') return true;
-                const selected = document.getElementById('filter-specific-date').value;
-                return t.date === selected;
+                if (currentFilter === 'day') return t.date === today;
+                if (currentFilter === 'custom') {
+                    const selected = document.getElementById('filter-specific-date').value;
+                    return t.date === selected;
+                }
+                if (currentFilter === 'week') {
+                    const transDate = new Date(t.date);
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                    return transDate >= sevenDaysAgo;
+                }
+                return true;
             });
 
+            // 2. Считаем баланс (по ВСЕМ транзакциям, а не только по отфильтрованным)
             let inc = 0, exp = 0;
             transactions.forEach(t => t.type === 'income' ? inc += t.amount : exp += t.amount);
             document.getElementById('total-balance').innerText = (inc - exp).toLocaleString() + ' ⃀';
             document.getElementById('total-income').innerText = '+' + inc.toLocaleString() + ' ⃀';
             document.getElementById('total-expenses').innerText = '-' + exp.toLocaleString() + ' ⃀';
 
+            // 3. Сортируем уже отфильтрованный список
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.id);
+                const dateB = new Date(b.id);
+                return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+
+            // 4. Отрисовываем
             if (filtered.length === 0) {
                 list.innerHTML = '<p class="text-center text-slate-400 py-10">Нет записей</p>';
             } else {
-                filtered.sort((a,b) => new Date(b.id) - new Date(a.id)).forEach(t => {
+                filtered.forEach(t => {
                     const item = document.createElement('div');
+                    const dateParts = t.date.split('-');
+                    const formattedDate = `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}`;
+                    
                     item.className = "flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-transparent hover:border-slate-100 transition-all";
                     item.innerHTML = `
                         <div class="flex items-center gap-3">
@@ -364,7 +352,7 @@
                             </div>
                             <div>
                                 <p class="font-bold text-slate-800 text-sm">${t.description}</p>
-                                <p class="text-[10px] text-slate-400">${t.date}</p>
+                                <p class="text-[10px] text-slate-400">${formattedDate}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 font-bold ${t.type === 'income' ? 'text-emerald-600' : 'text-slate-700'}">
@@ -375,10 +363,15 @@
                     list.appendChild(item);
                 });
             }
+            
             updateChart(filtered);
             lucide.createIcons();
         }
 
+        function toggleSort() {
+            sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+            renderUI(); // Перерисовываем список с новой сортировкой
+        }
         function updateChart(data) {
             let fInc = 0, fExp = 0;
             data.forEach(t => t.type === 'income' ? fInc += t.amount : fExp += t.amount);
@@ -415,7 +408,13 @@
             localStorage.setItem('ff_data', JSON.stringify(transactions));
             renderUI();
         }
-
+        function clearHistory() {
+            if (confirm('Вы уверены, что хотите удалить все операции?')) {
+                transactions = [];
+                localStorage.removeItem('ff_data');
+                renderUI();
+            }
+        }
         loadProfile();
         renderUI();
     </script>
